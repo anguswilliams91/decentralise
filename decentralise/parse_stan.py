@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 import re
 
 
@@ -141,3 +142,28 @@ def make_non_centered(stan_code: str) -> str:
     )
 
     return new_stan_code
+
+def cli(code_path: str, output_path: str) -> None:
+    """
+    Automatically use the non-centered parameterisation in Stan programs.
+    """
+    with open(code_path, 'r') as f:
+        centered_code = f.read()
+
+    non_centered_code = make_non_centered(centered_code)
+
+    with open(output_path, "w") as f:
+        f.write(non_centered_code)
+
+
+def main():
+    parser = ArgumentParser()
+    parser.add_argument("--input-file", dest="input_file")
+    parser.add_argument("--output-file", dest="output_file")
+    args = parser.parse_args()
+
+    cli(args.input_file, args.output_file)
+
+if __name__ == "__main__":
+    main()
+
