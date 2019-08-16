@@ -67,7 +67,9 @@ def modify_transformed_parameters_block(name_to_type, param_to_dist, stan_code):
 
     if transformed_param_block is None:
         return (
-            "transformed parameters {\n" + "\n".join(transformed_params_lines) + final_string
+            "transformed parameters {\n"
+            + "\n".join(transformed_params_lines)
+            + final_string
         )
     else:
         original_lines = transformed_param_block.splitlines()
