@@ -120,8 +120,8 @@ def modify_model_block(norm_params, param_to_dist, stan_code):
 def make_non_centered(stan_code: str) -> str:
     """Convert a stan program to non-centered.
 
-    Convert *any* normally distributed parameter in a stan program into a non-centered parameterisation and return the new 
-    stan program as a string.
+    Convert all normally distributed parameters in a stan program into a 
+    non-centered parameterisation and return the new stan program as a string.
     
     Args:
         stan_code: the original stan program.
