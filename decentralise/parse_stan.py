@@ -25,7 +25,11 @@ def get_parameter_dists(parameter_names, stan_code):
 
 
 def is_normal(dist):
-    return ("normal" in dist) and ("lognormal" not in dist)
+    return (
+        ("normal" in dist)
+        and ("lognormal" not in dist)
+        and ("multi_normal" not in dist)
+    )
 
 
 def get_mu_sigma(dist):
@@ -41,6 +45,7 @@ def modify_transformed_parameters_block(name_to_type, param_to_dist, stan_code):
         ).groups()[0]
     except AttributeError:
         transformed_param_block = None
+        final_string = "\n}\n"
 
     transformed_params_lines = []
     for param_name, dist in param_to_dist.items():
@@ -56,13 +61,13 @@ def modify_transformed_parameters_block(name_to_type, param_to_dist, stan_code):
             + param_name
             + "_std * "
             + sigma
-            + ";\n"
+            + ";"
         )
         transformed_params_lines.append(transformed_param_line)
 
     if transformed_param_block is None:
         return (
-            "transformed parameters {\n" + "\n".join(transformed_params_lines) + "}\n"
+            "transformed parameters {\n" + "\n".join(transformed_params_lines) + final_string
         )
     else:
         original_lines = transformed_param_block.splitlines()
@@ -75,22 +80,33 @@ def modify_transformed_parameters_block(name_to_type, param_to_dist, stan_code):
         return "\n".join(new_lines)
 
 
-def modify_parameters_block(param_names, stan_code):
+def modify_parameters_block(name_to_type, norm_params, stan_code):
     param_block = re.search(
         r"(?<!transformed )(parameters\s+{[\S\s]*?\})", stan_code
     ).groups()[0]
-    for param in param_names:
-        param_block = param_block.replace(param, param + "_std")
-    return param_block
+
+    new_lines = []
+    for line in param_block.splitlines():
+        found_param = False
+        for param_name, param_type in {
+            k: v for k, v in name_to_type.items() if k in norm_params.keys()
+        }.items():
+            if (param_type + " " + param_name + ";") in line:
+                new_lines.append("  " + param_type + " " + param_name + "_std;")
+                found_param = True
+        if not found_param:
+            new_lines.append(line)
+
+    return "\n".join(new_lines)
 
 
-def modify_model_block(param_names, stan_code):
+def modify_model_block(norm_params, param_to_dist, stan_code):
     model_block = re.search(r"(model\s+{[\S\s]*?\})", stan_code).groups()[0]
     new_lines = []
     for line in model_block.splitlines():
         found_param = False
-        for param in param_names:
-            if param in line.split("~")[0]:
+        for param, dist in norm_params.items():
+            if (param + " ~ " + dist) in line:
                 non_cent_line = "  " + param + "_std ~ normal(0, 1);"
                 new_lines.append(non_cent_line)
                 found_param = True
@@ -116,14 +132,14 @@ def make_non_centered(stan_code: str) -> str:
     norm_params = {
         param_name: dist
         for param_name, dist in param_to_dist.items()
-        if is_normal(dist)
+        if (is_normal(dist) and (get_mu_sigma(dist)[1] in name_to_type.keys()))
     }
 
     transformed_params_block = modify_transformed_parameters_block(
         name_to_type, norm_params, stan_code
     )
-    param_block = modify_parameters_block(norm_params.keys(), stan_code)
-    model_block = modify_model_block(norm_params.keys(), stan_code)
+    param_block = modify_parameters_block(name_to_type, norm_params, stan_code)
+    model_block = modify_model_block(norm_params, param_to_dist, stan_code)
 
     if re.search(r"(transformed parameters\s+{[\S\s]*?\})", stan_code) is None:
         new_stan_code = re.sub(
@@ -143,11 +159,12 @@ def make_non_centered(stan_code: str) -> str:
 
     return new_stan_code
 
+
 def cli(code_path: str, output_path: str) -> None:
     """
     Automatically use the non-centered parameterisation in Stan programs.
     """
-    with open(code_path, 'r') as f:
+    with open(code_path, "r") as f:
         centered_code = f.read()
 
     non_centered_code = make_non_centered(centered_code)
@@ -164,6 +181,6 @@ def main():
 
     cli(args.input_file, args.output_file)
 
+
 if __name__ == "__main__":
     main()
-
