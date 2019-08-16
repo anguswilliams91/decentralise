@@ -1,4 +1,6 @@
 # decentralise
+[![Build Status](https://travis-ci.org/anguswilliams91/decentralise.svg?branch=master)](https://travis-ci.org/anguswilliams91/decentralise)
+
 Make (some) Stan programs non-centered automatically.
 
 Inspired by reading [this paper](https://arxiv.org/abs/1906.03028).
