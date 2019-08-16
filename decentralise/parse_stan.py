@@ -176,9 +176,15 @@ def cli(code_path: str, output_path: str) -> None:
 
 
 def main():
-    parser = ArgumentParser()
-    parser.add_argument("--input-file", dest="input_file")
-    parser.add_argument("--output-file", dest="output_file")
+    parser = ArgumentParser(
+        description="Reparameterise normally distributed parameters in a stan program."
+    )
+    parser.add_argument("input_file", metavar="input_file", help="The input stan code.")
+    parser.add_argument(
+        "output_file",
+        metavar="output_file",
+        help="Destination for transformed stan code.",
+    )
     args = parser.parse_args()
 
     cli(args.input_file, args.output_file)
