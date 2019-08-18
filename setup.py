@@ -20,7 +20,7 @@ setup(
     author_email="anguswilliams91@gmail.com",
     license="MIT",
     packages=find_packages(),
-    version="0.1.0",
+    version="0.0.1",
     python_requires=">=3.6",
     entry_points={"console_scripts": ["decentralise=decentralise.parse_stan:main"]},
     tests_require=["pytest"],

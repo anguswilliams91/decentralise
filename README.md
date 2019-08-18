@@ -11,13 +11,11 @@ Inspired by reading [this paper](https://arxiv.org/abs/1906.03028).
 ## Installation
 
 Requires python 3.6+.
-Install by cloning the repo and doing
+Install with `pip`:
 
 ```bash
-python setup.py install
+pip install decentralise
 ```
-
-or use `pip` if you prefer.
 
 ## Example
 
