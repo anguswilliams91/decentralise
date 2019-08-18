@@ -70,7 +70,7 @@ model {
 ```
 
 I wrote this tool for fun, and have not thoroughly tested it.
-For example, will fail for any parameters whose sampling statements are not vectorised.
+For example, it will fail for any parameters whose sampling statements are not vectorised.
 e.g.:
 ```
 x ~ normal(mu, tau);
