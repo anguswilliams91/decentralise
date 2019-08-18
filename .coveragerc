@@ -1,0 +1,3 @@
+[run]
+omit = decentralise/setup.py
+       tests/*
