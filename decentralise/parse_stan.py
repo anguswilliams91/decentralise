@@ -2,11 +2,21 @@ from argparse import ArgumentParser
 import re
 
 
+def strip_comment(line):
+    return line.split(";")[0]
+
+
 def get_parameter_names_and_types(stan_code):
     # find the names of parameters in a stan program
     param_block = re.search(r"parameters\s+{([\S\s]*?)\}", stan_code).groups()[0]
     return {
-        line.split()[-1].strip(";"): line.split()[0].strip()
+        strip_comment(line)
+        .strip()
+        .split()[-1]
+        .strip(): strip_comment(line)
+        .strip()
+        .split()[0]
+        .strip()
         for line in param_block.splitlines()[1:]
     }
 
@@ -16,11 +26,12 @@ def get_parameter_dists(parameter_names, stan_code):
     model_block = re.search(r"model\s+{([\S\s]*?)\}", stan_code).groups()[0]
     param_to_dist = {}
     for line in model_block.splitlines()[1:]:
-        param, dist = line.strip().split("~")
-        param = param.strip()
-        dist = dist.strip(";").strip()
-        if param in parameter_names:
-            param_to_dist[param] = dist
+        if re.search(r"[^.;~]+~.*;", line):
+            param, dist = line.strip().split("~")
+            param = param.strip()
+            dist = dist.strip(";").strip()
+            if param in parameter_names:
+                param_to_dist[param] = dist
     return param_to_dist
 
 
@@ -33,7 +44,7 @@ def is_normal(dist):
 
 
 def get_mu_sigma(dist):
-    mu, sigma = re.search(r"normal\((.+)\,\s+(.+)\)", dist).groups()
+    mu, sigma = re.search(r"normal\s*\((.+)\,\s+(.+)\)", dist).groups()
     return mu, sigma
 
 

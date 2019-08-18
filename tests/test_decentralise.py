@@ -8,7 +8,7 @@ from decentralise.parse_stan import make_non_centered
 
 @pytest.mark.parametrize(
     "model",
-    ["eight_schools", "bpl", "lognormal_eight_schools", "multi_normal_eight_schools"],
+    ["eight_schools", "bpl", "lognormal_eight_schools", "multi_normal_eight_schools", "radon"],
 )
 def test_decentralise(model):
     code_path = Path(__file__).parent / f"stan_models/{model}.stan"
