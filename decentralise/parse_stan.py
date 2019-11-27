@@ -36,11 +36,7 @@ def get_parameter_dists(parameter_names, stan_code):
 
 
 def is_normal(dist):
-    return (
-        ("normal" in dist)
-        and ("lognormal" not in dist)
-        and ("multi_normal" not in dist)
-    )
+    return "normal" == dist
 
 
 def get_mu_sigma(dist):
